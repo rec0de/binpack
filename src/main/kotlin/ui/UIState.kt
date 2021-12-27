@@ -7,9 +7,11 @@ import binpack.Box
 import binpack.BoxGenerator
 import binpack.greedy.AreaDescOrdering
 import binpack.greedy.NormalPosFirstFitPacker
+import kotlinx.browser.document
 import kotlinx.browser.window
 import viz.Visualizer
 import kotlin.math.max
+import kotlin.math.round
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -46,11 +48,18 @@ object UIState {
         val elapsed = measureTime {
             solution = greedy.optimizeStep(stepSize)
             visualizer.refresh(solution)
+            updateStats()
         }
 
         val delay = max(5, minFrameDelay - elapsed.inWholeMilliseconds).toInt()
         if(running)
             window.setTimeout({ tick() }, delay)
+    }
+
+    fun updateStats() {
+        document.getElementById("statsLowerBound")!!.innerHTML = solution.lowerBound().toString()
+        document.getElementById("statsNumContainers")!!.innerHTML = solution.containers.size.toString()
+        document.getElementById("statsK1Density")!!.innerHTML = (round((solution.k1PackDensity() * 1000)) / 10).toString()
     }
 
     fun refreshInstance() {

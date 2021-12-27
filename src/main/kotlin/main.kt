@@ -14,6 +14,7 @@ fun main() {
         val stepBtn = document.getElementById("btnStep") as HTMLButtonElement
         val runBtn = document.getElementById("btnRun") as HTMLButtonElement
         val genBtn = document.getElementById("btnGenInstance") as HTMLButtonElement
+        val statsBtn = document.getElementById("btnUpdateStats") as HTMLButtonElement
 
         canvas.width = document.body!!.clientWidth
 
@@ -52,6 +53,8 @@ fun main() {
             UIState.refreshInstance()
             0
         }
+
+        statsBtn.onclick = { UIState.updateStats() }
 
     })
 }

@@ -29,22 +29,24 @@
             border-radius: 1rem;
             padding: 1rem;
             margin: 1rem;
+            float: right;
+            display: flex;
+            flex-direction: column;
         }
 
         #instanceGen {
             background: #000000;
             color:  #fff;
-            float: right;
-            display: flex;
-            flex-direction: column;
         }
 
         #algorithmSettings {
             background: #100090;
             color:  #fff;
-            float: right;
-            display: flex;
-            flex-direction: column;
+        }
+
+        #stats {
+            background: #320045;
+            color:  #fff;
         }
 
         .container > span {
@@ -72,6 +74,14 @@
     <span>Visualization update interval: <input type="number" id="inpStepSize" value="10"></span>
     <span>Minimum frame delay: <input type="number" id="inpFrameDelay" value="10"></span>
     <button id="btnRun">run</button> <button id="btnStep">single step</button>
+</div>
+
+<div class="container" id="stats">
+    <b>Solution Statistics</b>
+    <span>Lower bound: <b id="statsLowerBound">--</b> containers</span>
+    <span>Actual: <b id="statsNumContainers">--</b> containers</span>
+    <span>K-1 utilization: <b id="statsK1Density">--</b>%</span>
+    <button id="btnUpdateStats">update stats</button>
 </div>
 
 </body>
