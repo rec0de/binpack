@@ -1,4 +1,4 @@
-package binpack
+package binpack.localsearch
 
 /*
 abstract class GeometricBinPackStrategy : LocalSearchStrategy<BinPackProblem, GeoBinPackSolution> {

@@ -1,10 +1,11 @@
-package binpack
+package binpack.localsearch
 
 import algorithms.localsearch.LocalSearchStrategy
+import binpack.BinPackProblem
 import viz.GravityPackVisualizer
 import kotlin.math.pow
 
-object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem,BinPackProblem,GravityPackMove> {
+object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProblem, GravityPackMove> {
     override fun initialSolution(instance: BinPackProblem) = instance
 
     override fun neighboringSolutions(solution: BinPackProblem): Iterable<GravityPackMove> {
