@@ -70,10 +70,14 @@
 
 <div class="container" id="algorithmSettings">
     <b>Algorithm Settings</b>
-    <span>Optimization strategy: <input type="number" id="inpAlgorithm" value="100"></span>
+    <span>Optimization strategy:
+        <select id="inpAlgorithm"></select>
+    </span>
     <span>Visualization update interval: <input type="number" id="inpStepSize" value="10"></span>
     <span>Minimum frame delay: <input type="number" id="inpFrameDelay" value="10"></span>
-    <button id="btnRun">run</button> <button id="btnStep">single step</button>
+    <button id="btnRun">run</button>
+    <button id="btnStep">single step</button>
+    <button id="btnReset">reset</button>
 </div>
 
 <div class="container" id="stats">
@@ -81,6 +85,7 @@
     <span>Lower bound: <b id="statsLowerBound">--</b> containers</span>
     <span>Actual: <b id="statsNumContainers">--</b> containers</span>
     <span>K-1 utilization: <b id="statsK1Density">--</b>%</span>
+    <span>Runtime: <b id="statsRuntime">--</b> s</span>
     <button id="btnUpdateStats">update stats</button>
 </div>
 

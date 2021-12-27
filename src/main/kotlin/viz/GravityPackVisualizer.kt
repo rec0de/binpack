@@ -2,6 +2,7 @@ package viz
 
 import algorithms.localsearch.LocalSearch
 import binpack.*
+import binpack.localsearch.GravityBinPackStrategy
 import org.w3c.dom.CanvasRenderingContext2D
 
 class GravityPackVisualizer(val instance: BinPackProblem, private val ctx: CanvasRenderingContext2D) {
@@ -17,7 +18,7 @@ class GravityPackVisualizer(val instance: BinPackProblem, private val ctx: Canva
     fun step(n: Int) {
         console.log("Single optimization step")
         console.log("base score: ${GravityBinPackStrategy.scoreSolution(solution)}")
-        solution = LocalSearch.optimizeStep(GravityBinPackStrategy, solution, n)
+        solution = LocalSearch.optimizeStep(GravityBinPackStrategy, solution, n).first
         render()
     }
 

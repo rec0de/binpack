@@ -1,15 +1,17 @@
 package ui
 
-import algorithms.greedy.GreedyPacker
+import binpack.Algorithm
 import binpack.BinPackProblem
 import binpack.BinPackSolution
-import binpack.Box
 import binpack.BoxGenerator
-import binpack.greedy.AreaDescOrdering
-import binpack.greedy.NormalPosFirstFitPacker
+import binpack.configurations.GreedyAreaDescNPFF
+import binpack.configurations.GreedyOnlineNPFF
+import binpack.configurations.LocalSearchGravity
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.HTMLButtonElement
 import viz.Visualizer
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.round
 import kotlin.time.ExperimentalTime
@@ -25,13 +27,16 @@ object UIState {
         var maxH = 14
     }
 
+    private var runtime = 0L
     var running = false
     var stepSize = 1
-    var minFrameDelay = 200
+    var minFrameDelay = 100
+
+    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyAreaDescNPFF, LocalSearchGravity)
+    var activeAlgorithm = algorithms[0]
 
     lateinit var instance: BinPackProblem
     lateinit var solution: BinPackSolution
-    lateinit var greedy: GreedyPacker<Box,Int,BinPackSolution>
     lateinit var visualizer: Visualizer<BinPackSolution>
 
     private fun newInstance() = BoxGenerator.getProblemInstance(
@@ -46,25 +51,47 @@ object UIState {
     @OptIn(ExperimentalTime::class)
     fun tick() {
         val elapsed = measureTime {
-            solution = greedy.optimizeStep(stepSize)
+            val res = activeAlgorithm.optimizeStep(stepSize)
+            solution = res.first
             visualizer.refresh(solution)
             updateStats()
+
+            if(res.second)
+                stop()
         }
 
+        runtime += elapsed.inWholeMilliseconds
         val delay = max(5, minFrameDelay - elapsed.inWholeMilliseconds).toInt()
         if(running)
             window.setTimeout({ tick() }, delay)
     }
 
+    fun stop() {
+        running = false
+        (document.getElementById("btnRun") as HTMLButtonElement).innerText = "run"
+    }
+
     fun updateStats() {
-        document.getElementById("statsLowerBound")!!.innerHTML = solution.lowerBound().toString()
         document.getElementById("statsNumContainers")!!.innerHTML = solution.containers.size.toString()
         document.getElementById("statsK1Density")!!.innerHTML = (round((solution.k1PackDensity() * 1000)) / 10).toString()
+        document.getElementById("statsRuntime")!!.innerHTML = (round(runtime.toDouble() / 100) / 10).toString()
+    }
+
+    fun setActiveAlgorithm(index: Int) {
+        activeAlgorithm = algorithms[index]
+        reset()
     }
 
     fun refreshInstance() {
         instance = newInstance()
-        greedy = GreedyPacker(AreaDescOrdering, NormalPosFirstFitPacker, instance.containerSize, instance.boxes)
+        document.getElementById("statsLowerBound")!!.innerHTML = ceil(instance.boxes.sumOf { it.area }.toDouble() / (instance.containerSize * instance.containerSize)).toString()
+        reset()
+    }
+
+    fun reset() {
+        stop()
+        runtime = 0L
+        activeAlgorithm.init(instance)
         solution = BinPackSolution(instance.containerSize, emptyList())
         visualizer.refresh(solution)
     }

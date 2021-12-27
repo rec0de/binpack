@@ -2,8 +2,6 @@ package viz
 
 import binpack.BinPackSolution
 import org.w3c.dom.CanvasRenderingContext2D
-import kotlin.math.max
-import kotlin.math.min
 
 class BinPackVisualizer(override val ctx: CanvasRenderingContext2D) : Visualizer<BinPackSolution>() {
 

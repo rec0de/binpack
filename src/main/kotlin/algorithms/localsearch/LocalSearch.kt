@@ -3,10 +3,10 @@ package algorithms.localsearch
 object LocalSearch {
     fun <Problem, Solution, Move> optimize(strategy: LocalSearchStrategy<Problem, Solution, Move>, instance: Problem): Solution {
         val solution = strategy.initialSolution(instance)
-        return optimizeStep(strategy, solution, Int.MAX_VALUE)
+        return optimizeStep(strategy, solution, Int.MAX_VALUE).first
     }
 
-    fun <Problem, Solution, Move> optimizeStep(strategy: LocalSearchStrategy<Problem, Solution, Move>, partialSolution: Solution, stepLimit: Int): Solution {
+    fun <Problem, Solution, Move> optimizeStep(strategy: LocalSearchStrategy<Problem, Solution, Move>, partialSolution: Solution, stepLimit: Int): Pair<Solution, Boolean> {
         var solution = partialSolution
         var cost = strategy.scoreSolution(solution)
         var step = 0
@@ -16,7 +16,11 @@ object LocalSearch {
 
         while(step < stepLimit) {
             // find best neighboring solution
-            val consideredMoves = strategy.neighboringSolutions(solution).shuffled().subList(0, explorationLimit)
+            var consideredMoves = strategy.neighboringSolutions(solution).shuffled()
+
+            if(consideredMoves.size > explorationLimit)
+                consideredMoves = consideredMoves.subList(0, explorationLimit)
+
             val bestNextStep = consideredMoves.minByOrNull { strategy.scoreSolution(strategy.applyMove(solution, it)) } ?: break // break if no next step
             val newSolution = strategy.applyMove(solution, bestNextStep)
             val newCost = strategy.scoreSolution(newSolution)
@@ -26,7 +30,7 @@ object LocalSearch {
                 noImprovement++
                 console.log("No improvement for $noImprovement moves, limit is $noImprovementLimit")
                 if(noImprovement == noImprovementLimit)
-                    break
+                    return Pair(solution, true)
                 else
                     continue
             }
@@ -40,6 +44,6 @@ object LocalSearch {
             noImprovement = 0
         }
 
-        return solution
+        return Pair(solution, false)
     }
 }

@@ -8,27 +8,28 @@ class GreedyPacker<Item, Constraints, Solution>(
 ) {
 
     private var solution: Solution
+    private var item: Item? = null
 
     init {
         order.init(items, constraints)
         packer.init(constraints)
         solution = packer.initialSolution()
+        item = order.nextItem(solution)
     }
 
     fun optimize(): Solution {
-        return optimizeStep(Int.MAX_VALUE)
+        return optimizeStep(Int.MAX_VALUE).first
     }
 
-    fun optimizeStep(stepLimit: Int): Solution {
+    fun optimizeStep(stepLimit: Int): Pair<Solution,Boolean> {
         var steps = 0
-        var item: Item? = order.nextItem(solution)
 
         while(steps < stepLimit && item != null) {
-            solution = packer.packItem(item)
+            solution = packer.packItem(item!!)
             item = order.nextItem(solution)
             steps++
         }
 
-        return solution
+        return Pair(solution, item == null)
     }
 }

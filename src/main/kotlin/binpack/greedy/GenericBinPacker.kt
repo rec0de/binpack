@@ -24,4 +24,8 @@ abstract class GenericBinPacker : GreedyPackStrategy<Box, Int, BinPackSolution> 
         containers.clear()
         containerIndex = 0
     }
+
+    fun getSolution(): BinPackSolution {
+        return BinPackSolution(size, containers)
+    }
 }
