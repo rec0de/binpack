@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>binpack</title>
+    <style>
+        html, body {
+            font-family: Lato, Roboto, Helvetica, sans-serif;
+            background: #ccc;
+            margin: 0;
+        }
+
+        canvas {
+            background: #fff;
+            box-sizing: border-box;
+            width: calc(100% - 2rem);
+            height: 400px;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            border: 2px solid black;
+        }
+
+        input {
+            width: 5rem;
+        }
+
+        .container {
+            box-sizing: border-box;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 1rem;
+        }
+
+        #instanceGen {
+            background: #000000;
+            color:  #fff;
+            float: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #algorithmSettings {
+            background: #100090;
+            color:  #fff;
+            float: right;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container > span {
+            padding-top:  0.5rem;
+            padding-bottom:  0.5rem;
+        }
+    </style>
+</head>
+<body>
+<script src="binpack.js"></script>
+<canvas id="c" class="container" height="400px" width="100%"></canvas>
+
+<div class="container" id="instanceGen">
+    <b>Instance Generation</b>
+    <span>Container size: <input type="number" id="inpContainerSize" value="100"></span>
+    <span>Box count: <input type="number" id="inpBoxCount" value="200"></span>
+    <span>Smallest box: <input type="number" id="inpMinWidth" value="10"> x <input type="number" id="inpMinHeight" value="50"></span>
+    <span>Largest box: <input type="number" id="inpMaxWidth" value="10"> x <input type="number" id="inpMaxHeight" value="50"></span>
+    <button id="btnGenInstance">generate instance</button>
+</div>
+
+<div class="container" id="algorithmSettings">
+    <b>Algorithm Settings</b>
+    <span>Optimization strategy: <input type="number" id="inpAlgorithm" value="100"></span>
+    <span>Visualization update interval: <input type="number" id="inpStepSize" value="10"></span>
+    <span>Minimum frame delay: <input type="number" id="inpFrameDelay" value="10"></span>
+    <button id="btnRun">run</button> <button id="btnStep">single step</button>
+</div>
+
+</body>
+</html>
