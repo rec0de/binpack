@@ -2,7 +2,6 @@ package binpack.localsearch
 
 import algorithms.localsearch.LocalSearchStrategy
 import binpack.BinPackProblem
-import viz.GravityPackVisualizer
 import kotlin.math.pow
 
 object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProblem, GravityPackMove> {
@@ -32,9 +31,7 @@ object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProbl
         return BinPackProblem(solution.containerSize, newBoxes)
     }
 
-    override fun scoreSolution(solution: BinPackProblem) = scoreSolution(solution, null)
-
-    fun scoreSolution(solution: BinPackProblem, viz: GravityPackVisualizer?): Double {
+    override fun scoreSolution(solution: BinPackProblem): Double {
         val size = solution.containerSize
         val containerStats = mutableListOf<Int>()
         var containerIndex = 0
@@ -74,9 +71,6 @@ object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProbl
             segments = segments.sortedBy { it.second }
 
             containerFill += box.area
-
-            // Inform potential visualizer of box position
-            viz?.boxCallback(box, minX, offset, containerIndex)
         }
 
         containerStats.add(containerFill) // containerUtilization(size, segments, containerIndex, viz)

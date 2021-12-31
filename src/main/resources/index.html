@@ -10,14 +10,21 @@
             margin: 0;
         }
 
-        canvas {
+        #canvasStack {
             background: #fff;
-            box-sizing: border-box;
+            border: 2px solid black;
             width: calc(100% - 2rem);
-            height: 400px;
+        }
+
+        canvas {
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-            border: 2px solid black;
+            height: 400px;
+        }
+
+        #debug {
+            position: absolute;
+            width: calc(100% - 4rem - 4px);
         }
 
         input {
@@ -57,14 +64,19 @@
 </head>
 <body>
 <script src="binpack.js"></script>
-<canvas id="c" class="container" height="400px" width="100%"></canvas>
+
+<div class="container" id="canvasStack">
+    <canvas id="c" height="400px" width="100%"></canvas>
+    <canvas id="debug" height="400px" width="100%" ></canvas>
+</div>
 
 <div class="container" id="instanceGen">
     <b>Instance Generation</b>
-    <span>Container size: <input type="number" id="inpContainerSize" value="100"></span>
+    <span>Seed: <input type="number" id="inpSeed" value="1337"></span>
+    <span>Container size: <input type="number" id="inpContainerSize" value="20"></span>
     <span>Box count: <input type="number" id="inpBoxCount" value="200"></span>
-    <span>Smallest box: <input type="number" id="inpMinWidth" value="10"> x <input type="number" id="inpMinHeight" value="50"></span>
-    <span>Largest box: <input type="number" id="inpMaxWidth" value="10"> x <input type="number" id="inpMaxHeight" value="50"></span>
+    <span>Smallest box: <input type="number" id="inpMinWidth" value="1"> x <input type="number" id="inpMinHeight" value="1"></span>
+    <span>Largest box: <input type="number" id="inpMaxWidth" value="7"> x <input type="number" id="inpMaxHeight" value="7"></span>
     <button id="btnGenInstance">generate instance</button>
 </div>
 
@@ -73,8 +85,8 @@
     <span>Optimization strategy:
         <select id="inpAlgorithm"></select>
     </span>
-    <span>Visualization update interval: <input type="number" id="inpStepSize" value="10"></span>
-    <span>Minimum frame delay: <input type="number" id="inpFrameDelay" value="10"></span>
+    <span>Visualization update interval: <input type="number" id="inpStepSize" value="1"></span>
+    <span>Minimum frame delay: <input type="number" id="inpFrameDelay" value="20"></span>
     <button id="btnRun">run</button>
     <button id="btnStep">single step</button>
     <button id="btnReset">reset</button>

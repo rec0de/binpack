@@ -7,6 +7,7 @@ import viz.BinPackVisualizer
 fun main() {
     window.addEventListener("load", {
         val canvas = document.getElementById("c") as HTMLCanvasElement
+        val debug = document.getElementById("debug") as HTMLCanvasElement
         val ctx = canvas.getContext("2d") as CanvasRenderingContext2D
         val stepBtn = document.getElementById("btnStep") as HTMLButtonElement
         val runBtn = document.getElementById("btnRun") as HTMLButtonElement
@@ -16,8 +17,10 @@ fun main() {
         val algoSelect = document.getElementById("inpAlgorithm") as HTMLSelectElement
 
         canvas.width = document.body!!.clientWidth
+        debug.width = document.body!!.clientWidth
 
-        UIState.visualizer = BinPackVisualizer(ctx)
+
+        UIState.visualizer = BinPackVisualizer(ctx, debug.getContext("2d") as CanvasRenderingContext2D)
         UIState.refreshInstance()
 
         val options = UIState.algorithms.map { it.name }
@@ -53,6 +56,7 @@ fun main() {
 
         genBtn.onclick = {
             val genOpt = UIState.GeneratorOptions
+            genOpt.seed = (document.getElementById("inpSeed") as HTMLInputElement).value.toInt()
             genOpt.boxCount = (document.getElementById("inpBoxCount") as HTMLInputElement).value.toInt()
             genOpt.containerSize = (document.getElementById("inpContainerSize") as HTMLInputElement).value.toInt()
             genOpt.minH = (document.getElementById("inpMinHeight") as HTMLInputElement).value.toInt()

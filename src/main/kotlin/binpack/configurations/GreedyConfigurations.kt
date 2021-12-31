@@ -6,6 +6,7 @@ import binpack.BinPackProblem
 import binpack.BinPackSolution
 import binpack.Box
 import binpack.greedy.AreaDescOrdering
+import binpack.greedy.NormalPosCircTouchPacker
 import binpack.greedy.NormalPosFirstFitPacker
 import binpack.greedy.OnlineOrdering
 
@@ -22,9 +23,23 @@ object GreedyOnlineNPFF : GenericGreedyConfig() {
     }
 }
 
+object GreedyOnlineNPCT : GenericGreedyConfig() {
+    override val name = "Greedy-Online-NormalPosCircTouch"
+    override fun init(instance: BinPackProblem) {
+        packer = GreedyPacker(OnlineOrdering, NormalPosCircTouchPacker, instance.containerSize, instance.boxes)
+    }
+}
+
 object GreedyAreaDescNPFF : GenericGreedyConfig() {
     override val name = "Greedy-AreaDesc-NormalPosFirstFit"
     override fun init(instance: BinPackProblem) {
         packer = GreedyPacker(AreaDescOrdering, NormalPosFirstFitPacker, instance.containerSize, instance.boxes)
+    }
+}
+
+object GreedyAreaDescNPCT : GenericGreedyConfig() {
+    override val name = "Greedy-AreaDesc-NormalPosCircTouch"
+    override fun init(instance: BinPackProblem) {
+        packer = GreedyPacker(AreaDescOrdering, NormalPosCircTouchPacker, instance.containerSize, instance.boxes)
     }
 }

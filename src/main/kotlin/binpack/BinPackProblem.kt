@@ -8,6 +8,8 @@ data class BinPackProblem(val containerSize: Int, val boxes: List<Box>)
 open class Box(val w: Int, val h: Int) {
     val area: Int
         get() = w * h
+    val circumference: Int
+        get() = 2 * w + 2 * h
     val longSide: Int
         get() = max(w, h)
     val shortSide: Int

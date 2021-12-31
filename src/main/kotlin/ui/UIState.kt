@@ -4,9 +4,7 @@ import binpack.Algorithm
 import binpack.BinPackProblem
 import binpack.BinPackSolution
 import binpack.BoxGenerator
-import binpack.configurations.GreedyAreaDescNPFF
-import binpack.configurations.GreedyOnlineNPFF
-import binpack.configurations.LocalSearchGravity
+import binpack.configurations.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLButtonElement
@@ -19,6 +17,7 @@ import kotlin.time.measureTime
 
 object UIState {
     object GeneratorOptions {
+        var seed = 1337
         var containerSize = 20
         var boxCount = 3
         var minW = 3
@@ -32,7 +31,7 @@ object UIState {
     var stepSize = 1
     var minFrameDelay = 100
 
-    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyAreaDescNPFF, LocalSearchGravity)
+    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyOnlineNPCT, GreedyAreaDescNPFF, GreedyAreaDescNPCT, LocalSearchGravity)
     var activeAlgorithm = algorithms[0]
 
     lateinit var instance: BinPackProblem
@@ -45,7 +44,8 @@ object UIState {
             GeneratorOptions.maxW,
             GeneratorOptions.minH,
             GeneratorOptions.maxH,
-            GeneratorOptions.boxCount
+            GeneratorOptions.boxCount,
+            GeneratorOptions.seed
     )
 
     @OptIn(ExperimentalTime::class)

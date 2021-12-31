@@ -10,6 +10,7 @@ abstract class Visualizer<Solution> {
     protected var rowSize = 1
     protected var scale = 10.0
     protected abstract val ctx: CanvasRenderingContext2D
+    protected abstract val debug: CanvasRenderingContext2D
 
     abstract fun render(solution: Solution)
 
@@ -39,5 +40,30 @@ abstract class Visualizer<Solution> {
     protected fun renderBox(box: PlacedBox, sx: Double, sy: Double) {
         ctx.fillRect(sx + box.x * scale, sy + box.y * scale, box.w * scale, box.h * scale)
         ctx.strokeRect(sx + box.x * scale, sy + box.y * scale, box.w * scale, box.h * scale)
+    }
+
+    fun debugClear() {
+        debug.clearRect(0.0, 0.0, debug.canvas.width.toDouble(), debug.canvas.height.toDouble())
+    }
+
+    fun debugBox(box: PlacedBox, ci: Int) {
+        val row = ci / rowSize
+        val col = ci % rowSize
+        val sx = (displaySize + 20) * col
+        val sy = (displaySize + 20) * row
+        debug.fillStyle = "#00aa00"
+        debug.fillRect(sx + box.x * scale, sy + box.y * scale, box.w * scale, box.h * scale)
+    }
+
+    fun debugLine(sx: Int, sy: Int, ex: Int, ey: Int, ci: Int) {
+        val row = ci / rowSize
+        val col = ci % rowSize
+        val ox = (displaySize + 20) * col
+        val oy = (displaySize + 20) * row
+        debug.strokeStyle = "#0000ff"
+        debug.beginPath()
+        debug.moveTo(ox + sx * scale, oy + sy * scale)
+        debug.lineTo(ox + ex * scale, oy + ey * scale)
+        debug.stroke()
     }
 }

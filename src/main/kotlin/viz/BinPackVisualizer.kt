@@ -3,7 +3,7 @@ package viz
 import binpack.BinPackSolution
 import org.w3c.dom.CanvasRenderingContext2D
 
-class BinPackVisualizer(override val ctx: CanvasRenderingContext2D) : Visualizer<BinPackSolution>() {
+class BinPackVisualizer(override val ctx: CanvasRenderingContext2D, override val debug: CanvasRenderingContext2D) : Visualizer<BinPackSolution>() {
 
     override fun refresh(solution: BinPackSolution) {
         layout(solution.containers.size, solution.containerSize)
