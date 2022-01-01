@@ -4,32 +4,42 @@ import algorithms.localsearch.LocalSearch
 import binpack.Algorithm
 import binpack.BinPackProblem
 import binpack.BinPackSolution
+import binpack.SequenceSolution
+import binpack.greedy.NormalPosCircTouchPacker
 import binpack.greedy.NormalPosFirstFitPacker
-import binpack.localsearch.GravityBinPackStrategy
+import binpack.localsearch.SequenceBasedStrategy
+import binpack.localsearch.SwapMove
 
-object LocalSearchGravity : Algorithm() {
-    override val name = "LocalSearch-NormalPosFirstFit"
-    private val strategy = GravityBinPackStrategy
-    private lateinit var partialSolution: BinPackProblem
+object LocalSearchCircTouch : Algorithm() {
+    override val name = "LocalSearch-NormalPosCircTouch"
+    private lateinit var localsearch: LocalSearch<BinPackProblem, SequenceSolution, SwapMove>
 
     override fun optimize(): BinPackSolution {
-        partialSolution = LocalSearch.optimize(strategy, partialSolution)
-        return convertSolution(partialSolution)
+        return localsearch.optimize()
     }
 
     override fun optimizeStep(limit: Int): Pair<BinPackSolution, Boolean> {
-        val res = LocalSearch.optimizeStep(strategy, partialSolution, limit)
-        partialSolution = res.first
-        return Pair(convertSolution(partialSolution), res.second)
+        return localsearch.optimizeStep(limit)
     }
 
     override fun init(instance: BinPackProblem) {
-        partialSolution = strategy.initialSolution(instance)
+        localsearch = LocalSearch(SequenceBasedStrategy(NormalPosCircTouchPacker), instance)
+    }
+}
+
+object LocalSearchFirstFit : Algorithm() {
+    override val name = "LocalSearch-NormalPosFirstFit"
+    private lateinit var localsearch: LocalSearch<BinPackProblem, SequenceSolution, SwapMove>
+
+    override fun optimize(): BinPackSolution {
+        return localsearch.optimize()
     }
 
-    private fun convertSolution(sequence: BinPackProblem): BinPackSolution {
-        NormalPosFirstFitPacker.init(sequence.containerSize)
-        sequence.boxes.forEach { NormalPosFirstFitPacker.packItem(it) }
-        return NormalPosFirstFitPacker.getSolution()
+    override fun optimizeStep(limit: Int): Pair<BinPackSolution, Boolean> {
+        return localsearch.optimizeStep(limit)
+    }
+
+    override fun init(instance: BinPackProblem) {
+        localsearch = LocalSearch(SequenceBasedStrategy(NormalPosFirstFitPacker), instance)
     }
 }

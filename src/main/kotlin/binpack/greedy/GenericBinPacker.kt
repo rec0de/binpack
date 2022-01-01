@@ -6,7 +6,7 @@ import binpack.Box
 import binpack.PlacedBox
 import ui.UIState
 
-abstract class GenericBinPacker : GreedyPackStrategy<Box, Int, BinPackSolution> {
+abstract class GenericBinPacker(private val highEffort: Boolean, private val lowerBound: Int = 0) : GreedyPackStrategy<Box, Int, BinPackSolution> {
     protected var size = 0
     private var containerIndex = 0
     private val containers = mutableListOf<Container>()
@@ -22,14 +22,16 @@ abstract class GenericBinPacker : GreedyPackStrategy<Box, Int, BinPackSolution> 
         return BinPackSolution(size, containers.map { it.boxes })
     }
 
-    override fun packItem(item: Box): BinPackSolution {
+    override fun packItem(item: Box): BinPackSolution = if(highEffort) packItemBestFit(item) else packItemFirstFit(item)
+
+    private fun packItemFirstFit(item: Box): BinPackSolution {
         var placed: PlacedBox? = null
         var ci = 0
         var i = 0
 
         while(placed == null && i < availableContainers.size) {
             val tryContainer = availableContainers[i]
-            placed = packIntoContainer(item, tryContainer)
+            placed = packIntoContainer(item, tryContainer)?.first
             ci = tryContainer.ci
             i += 1
         }
@@ -40,7 +42,7 @@ abstract class GenericBinPacker : GreedyPackStrategy<Box, Int, BinPackSolution> 
             val container = Container(ci, size)
             containers.add(container)
             availableContainers.add(container)
-            placed = packIntoContainer(item, containers[ci])!!
+            placed = packIntoContainer(item, containers[ci])!!.first
         }
 
         containers[ci].add(placed)
@@ -53,12 +55,44 @@ abstract class GenericBinPacker : GreedyPackStrategy<Box, Int, BinPackSolution> 
         return BinPackSolution(size, containers.map{ it.boxes })
     }
 
-    abstract fun packIntoContainer(item: Box, container: Container): PlacedBox?
+    private fun packItemBestFit(item: Box): BinPackSolution {
+        val placed = availableContainers.map { Pair(packIntoContainer(item, it), it.ci) }.maxByOrNull { it.first?.second ?: Double.NEGATIVE_INFINITY }
+        val ci: Int
+
+        // Start new container if no fit found
+        if(placed?.first == null) {
+            val container = Container(containers.size, size)
+            ci = containers.size
+            containers.add(container)
+            availableContainers.add(container)
+            container.add(packIntoContainer(item, container)!!.first)
+        }
+        else {
+            ci = placed.second
+            containers[ci].add(placed.first!!.first)
+        }
+
+        if(!containers[ci].hasAccessibleSpace) {
+            console.log("Container $ci is full")
+            availableContainers.remove(containers[ci])
+        }
+
+        return BinPackSolution(size, containers.map{ it.boxes })
+    }
+
+    abstract fun packIntoContainer(item: Box, container: Container): Pair<PlacedBox,Double>?
 
     open fun reset() {
         containers.clear()
         availableContainers.clear()
         containerIndex = 0
+
+        // Initialize number of containers equal to lower bound
+        (0 until lowerBound).forEach {
+            val c = Container(it, size)
+            containers.add(c)
+            availableContainers.add(c)
+        }
     }
 
     fun getSolution(): BinPackSolution {
@@ -76,14 +110,14 @@ class Container(val ci: Int, val size: Int) {
 
     fun add(box: PlacedBox) {
         boxes.add(box)
-        console.log(box.toString())
 
-        UIState.visualizer.debugBox(box,ci)
+        //console.log(box.toString())
+        //UIState.visualizer.debugBox(box,ci)
 
         updateSegments(segmentsX, box.y, box.h, box.x, box.w)
         updateSegments(segmentsY, box.x, box.w, box.y, box.h)
 
-        UIState.visualizer.debugClear()
+        /*UIState.visualizer.debugClear()
         segmentsX.forEachIndexed { index, segment ->
             val end = segmentsX.getOrNull(index + 1)?.start ?: size
             UIState.visualizer.debugLine(segment.value, segment.start, segment.value, end, ci)
@@ -91,7 +125,7 @@ class Container(val ci: Int, val size: Int) {
         segmentsY.forEachIndexed { index, segment ->
             val end = segmentsY.getOrNull(index + 1)?.start ?: size
             UIState.visualizer.debugLine(segment.start, segment.value, end, segment.value, ci)
-        }
+        }*/
     }
 
     fun getRelevantSegments(segs: List<Segment>, boxStart: Int, boxMeasurement: Int): List<Segment> {
@@ -110,7 +144,8 @@ class Container(val ci: Int, val size: Int) {
             ?: return
 
         segs.removeAll { it.start in boxStart until boxEnd }
-        val insertIndex = -(segs.binarySearchBy(segStart){ it.start } + 1)
+        val insertIndex = -(segs.binarySearchBy(boxStart){ it.start } + 1)
+        //console.log(insertIndex)
         segs.add(insertIndex, Segment(segStart, value + boxValue))
 
         if(lastUsedSegment.start < boxEnd)

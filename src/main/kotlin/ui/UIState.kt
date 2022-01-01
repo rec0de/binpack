@@ -8,8 +8,8 @@ import binpack.configurations.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLButtonElement
+import org.w3c.dom.asList
 import viz.Visualizer
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.round
 import kotlin.time.ExperimentalTime
@@ -31,7 +31,7 @@ object UIState {
     var stepSize = 1
     var minFrameDelay = 100
 
-    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyOnlineNPCT, GreedyAreaDescNPFF, GreedyAreaDescNPCT, LocalSearchGravity)
+    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyOnlineNPCT, GreedyOnlineNPCTBF, GreedyAreaDescNPFF, GreedyAreaDescNPCT, GreedyAreaDescNPCTBF, LocalSearchFirstFit, LocalSearchCircTouch)
     var activeAlgorithm = algorithms[0]
 
     lateinit var instance: BinPackProblem
@@ -72,9 +72,17 @@ object UIState {
     }
 
     fun updateStats() {
-        document.getElementById("statsNumContainers")!!.innerHTML = solution.containers.size.toString()
-        document.getElementById("statsK1Density")!!.innerHTML = (round((solution.k1PackDensity() * 1000)) / 10).toString()
-        document.getElementById("statsRuntime")!!.innerHTML = (round(runtime.toDouble() / 100) / 10).toString()
+        val containers = solution.containers.size.toString()
+        val k1 = (round((solution.k1PackDensity() * 1000)) / 10).toString()
+        val runtime = (round(runtime.toDouble() / 100) / 10).toString()
+
+        document.getElementById("statsNumContainers")!!.innerHTML = containers
+        document.getElementById("statsK1Density")!!.innerHTML = k1
+        document.getElementById("statsRuntime")!!.innerHTML = runtime
+
+        val statListEntry = document.getElementById("statEntry-${activeAlgorithm.name}")!!
+        statListEntry.innerHTML = "${containers}C / $k1% / ${runtime}s"
+        statListEntry.classList.remove("invisible")
     }
 
     fun setActiveAlgorithm(index: Int) {
@@ -84,7 +92,10 @@ object UIState {
 
     fun refreshInstance() {
         instance = newInstance()
-        document.getElementById("statsLowerBound")!!.innerHTML = ceil(instance.boxes.sumOf { it.area }.toDouble() / (instance.containerSize * instance.containerSize)).toString()
+        document.getElementById("statsLowerBound")!!.innerHTML = instance.lowerBound.toString()
+
+        document.getElementById("statsByAlgo")!!.children.asList().forEach { it.classList.add("invisible") }
+
         reset()
     }
 

@@ -5,7 +5,13 @@ import binpack.BinPackProblem
 import kotlin.math.pow
 
 object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProblem, GravityPackMove> {
-    override fun initialSolution(instance: BinPackProblem) = instance
+    private lateinit var instance: BinPackProblem
+
+    override fun init(instance: BinPackProblem) {
+        this.instance = instance
+    }
+
+    override fun initialSolution() = instance
 
     override fun neighboringSolutions(solution: BinPackProblem): Iterable<GravityPackMove> {
         val rotateMoves = solution.boxes.indices.reversed().map { i -> RotateMove(i) }
@@ -30,6 +36,8 @@ object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProbl
 
         return BinPackProblem(solution.containerSize, newBoxes)
     }
+
+    override fun scoreMove(solution: BinPackProblem, move: GravityPackMove) = scoreSolution(applyMove(solution, move))
 
     override fun scoreSolution(solution: BinPackProblem): Double {
         val size = solution.containerSize

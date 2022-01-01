@@ -3,9 +3,9 @@ package binpack.greedy
 import binpack.Box
 import binpack.PlacedBox
 
-object NormalPosFirstFitPacker : GenericBinPacker() {
+object NormalPosFirstFitPacker : GenericBinPacker(false) {
 
-    override fun packIntoContainer(item: Box, container: Container): PlacedBox? {
+    override fun packIntoContainer(item: Box, container: Container): Pair<PlacedBox, Double>? {
         val segments = container.segmentsX
 
         // place box at lowest height as far back as it fits
@@ -25,6 +25,6 @@ object NormalPosFirstFitPacker : GenericBinPacker() {
             segmentIndex++
         }
 
-        return item.asPlaced(minX, offset)
+        return Pair(item.asPlaced(minX, offset), 0.0)
     }
 }

@@ -1,9 +1,12 @@
 package binpack
 
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
-data class BinPackProblem(val containerSize: Int, val boxes: List<Box>)
+data class BinPackProblem(val containerSize: Int, val boxes: List<Box>) {
+    val lowerBound = ceil(boxes.sumOf { it.area }.toDouble() / (containerSize * containerSize)).toInt()
+}
 
 open class Box(val w: Int, val h: Int) {
     val area: Int

@@ -24,10 +24,16 @@ fun main() {
         UIState.refreshInstance()
 
         val options = UIState.algorithms.map { it.name }
+        val statsContainer = document.getElementById("statsByAlgo") as HTMLDivElement
         options.forEach { algo ->
             val opt = document.createElement("option")
             opt.innerHTML = algo
             algoSelect.appendChild(opt)
+
+            val statEntry = document.createElement("span")
+            statEntry.id = "statEntry-$algo"
+            statEntry.classList.add("invisible")
+            statsContainer.appendChild(statEntry)
         }
 
         algoSelect.onchange = {

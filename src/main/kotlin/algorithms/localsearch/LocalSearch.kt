@@ -1,14 +1,19 @@
 package algorithms.localsearch
 
-object LocalSearch {
-    fun <Problem, Solution, Move> optimize(strategy: LocalSearchStrategy<Problem, Solution, Move>, instance: Problem): Solution {
-        val solution = strategy.initialSolution(instance)
-        return optimizeStep(strategy, solution, Int.MAX_VALUE).first
+class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStrategy<Problem, Solution, Move>, instance: Problem) {
+
+    private var solution: Solution
+    private var bestCost: Double
+
+    init {
+        strategy.init(instance)
+        solution = strategy.initialSolution()
+        bestCost = strategy.scoreSolution(solution)
     }
 
-    fun <Problem, Solution, Move> optimizeStep(strategy: LocalSearchStrategy<Problem, Solution, Move>, partialSolution: Solution, stepLimit: Int): Pair<Solution, Boolean> {
-        var solution = partialSolution
-        var cost = strategy.scoreSolution(solution)
+    fun optimize() = optimizeStep(Int.MAX_VALUE).first
+
+    fun optimizeStep(stepLimit: Int): Pair<Solution, Boolean> {
         var step = 0
         var noImprovement = 0
         val explorationLimit = 200
@@ -21,12 +26,12 @@ object LocalSearch {
             if(consideredMoves.size > explorationLimit)
                 consideredMoves = consideredMoves.subList(0, explorationLimit)
 
-            val bestNextStep = consideredMoves.minByOrNull { strategy.scoreSolution(strategy.applyMove(solution, it)) } ?: break // break if no next step
+            val bestNextStep = consideredMoves.minByOrNull { strategy.scoreMove(solution, it) } ?: break // break if no next step
             val newSolution = strategy.applyMove(solution, bestNextStep)
             val newCost = strategy.scoreSolution(newSolution)
 
             // break if no improvement
-            if(newCost >= cost) {
+            if(newCost >= bestCost) {
                 noImprovement++
                 console.log("No improvement for $noImprovement moves, limit is $noImprovementLimit")
                 if(noImprovement == noImprovementLimit)
@@ -39,7 +44,7 @@ object LocalSearch {
 
             // update solution
             solution = newSolution
-            cost = newCost
+            bestCost = newCost
             step++
             noImprovement = 0
         }

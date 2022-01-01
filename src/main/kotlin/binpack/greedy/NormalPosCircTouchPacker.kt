@@ -1,13 +1,18 @@
 package binpack.greedy
 
+import binpack.BinPackProblem
 import binpack.Box
 import binpack.PlacedBox
 import ui.UIState
 import kotlin.math.min
 
-object NormalPosCircTouchPacker : GenericBinPacker() {
+object NormalPosCircTouchPacker: AbstractNormalPosCircTouchPacker(false, 0)
 
-    override fun packIntoContainer(item: Box, container: Container): PlacedBox? {
+class GoldStandardPacker(instance: BinPackProblem): AbstractNormalPosCircTouchPacker(true, instance.lowerBound)
+
+abstract class AbstractNormalPosCircTouchPacker(highEffort: Boolean, lowerBound: Int) : GenericBinPacker(highEffort, lowerBound) {
+
+    override fun packIntoContainer(item: Box, container: Container): Pair<PlacedBox, Double>? {
         var box = item
 
         // Try both rotation options and use best resulting fit
@@ -25,7 +30,7 @@ object NormalPosCircTouchPacker : GenericBinPacker() {
 
         //console.log("Found fit for box $box, total circumference: ${box.circumference}, touched: ${bestFit.third}")
 
-        return box.asPlaced(bestFit.first, bestFit.second)
+        return Pair(box.asPlaced(bestFit.first, bestFit.second), bestFit.third)
     }
 
     private fun findBestFit(box: Box, container: Container) : Triple<Int, Int, Double>? {
@@ -52,8 +57,8 @@ object NormalPosCircTouchPacker : GenericBinPacker() {
         // Calculate edge overlap with bottom and right container border
         if(y + box.h == size)
             containerTouch += box.w
-        if(x + box.w == size)
-            containerTouch += box.h
+        /*if(x + box.w == size)
+            containerTouch += box.h*/
 
         // Calculate edge overlap with surrounding boxes (only considers bottom and left edges)
         // also inexact because segments are more of an approximation than actual reflection of the boxes

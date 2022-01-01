@@ -3,14 +3,9 @@ package binpack
 import kotlin.math.ceil
 import kotlin.math.max
 
-class BinPackSolution(val containerSize: Int, val containers: List<Collection<PlacedBox>>) {
+open class BinPackSolution(val containerSize: Int, val containers: List<Collection<PlacedBox>>) {
     val boxCount: Int
         get() = containers.sumOf { it.size }
-
-    fun lowerBound() : Int {
-        val boxArea = containers.sumOf { c -> c.sumOf { box -> box.area } }
-        return ceil(boxArea.toDouble() / (containerSize * containerSize)).toInt()
-    }
 
     // compute average container utilization of the k-1 most densely packed containers
     fun k1PackDensity() : Double {
@@ -38,4 +33,10 @@ class BinPackSolution(val containerSize: Int, val containers: List<Collection<Pl
         val used = container.sumOf { box -> box.w * box.h }
         return used.toDouble() / available
     }
+
+    fun asSequenceSolution(insertionSequence: List<Box>) = SequenceSolution(containerSize, insertionSequence, containers)
+}
+
+class SequenceSolution(containerSize: Int, val insertionSequence: List<Box>, containers: List<Collection<PlacedBox>>) : BinPackSolution(containerSize, containers) {
+
 }

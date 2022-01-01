@@ -56,9 +56,18 @@
             color:  #fff;
         }
 
+        #statsByAlgo {
+            display: flex;
+            flex-direction: column;
+        }
+
         .container > span {
             padding-top:  0.5rem;
             padding-bottom:  0.5rem;
+        }
+
+        .invisible {
+            display: none;
         }
     </style>
 </head>
@@ -99,6 +108,7 @@
     <span>K-1 utilization: <b id="statsK1Density">--</b>%</span>
     <span>Runtime: <b id="statsRuntime">--</b> s</span>
     <button id="btnUpdateStats">update stats</button>
+    <div id="statsByAlgo"></div>
 </div>
 
 </body>

@@ -5,10 +5,7 @@ import binpack.Algorithm
 import binpack.BinPackProblem
 import binpack.BinPackSolution
 import binpack.Box
-import binpack.greedy.AreaDescOrdering
-import binpack.greedy.NormalPosCircTouchPacker
-import binpack.greedy.NormalPosFirstFitPacker
-import binpack.greedy.OnlineOrdering
+import binpack.greedy.*
 
 abstract class GenericGreedyConfig : Algorithm() {
     protected lateinit var packer: GreedyPacker<Box,Int,BinPackSolution>
@@ -41,5 +38,19 @@ object GreedyAreaDescNPCT : GenericGreedyConfig() {
     override val name = "Greedy-AreaDesc-NormalPosCircTouch"
     override fun init(instance: BinPackProblem) {
         packer = GreedyPacker(AreaDescOrdering, NormalPosCircTouchPacker, instance.containerSize, instance.boxes)
+    }
+}
+
+object GreedyAreaDescNPCTBF : GenericGreedyConfig() {
+    override val name = "Greedy-AreaDesc-NormalPosCircTouch-BestFit"
+    override fun init(instance: BinPackProblem) {
+        packer = GreedyPacker(AreaDescOrdering, GoldStandardPacker(instance), instance.containerSize, instance.boxes)
+    }
+}
+
+object GreedyOnlineNPCTBF : GenericGreedyConfig() {
+    override val name = "Greedy-Online-NormalPosCircTouch-BestFit"
+    override fun init(instance: BinPackProblem) {
+        packer = GreedyPacker(OnlineOrdering, GoldStandardPacker(instance), instance.containerSize, instance.boxes)
     }
 }
