@@ -1,12 +1,11 @@
 package binpack.configurations
 
 import algorithms.localsearch.LocalSearch
-import binpack.Algorithm
-import binpack.BinPackProblem
-import binpack.BinPackSolution
-import binpack.SequenceSolution
+import binpack.*
 import binpack.greedy.NormalPosCircTouchPacker
 import binpack.greedy.NormalPosFirstFitPacker
+import binpack.localsearch.LSSMove
+import binpack.localsearch.LocalSequenceStrategy
 import binpack.localsearch.SequenceBasedStrategy
 import binpack.localsearch.SwapMove
 
@@ -41,5 +40,22 @@ object LocalSearchFirstFit : Algorithm() {
 
     override fun init(instance: BinPackProblem) {
         localsearch = LocalSearch(SequenceBasedStrategy(NormalPosFirstFitPacker), instance)
+    }
+}
+
+object LocalSearchLocalSequence : Algorithm() {
+    override val name = "LocalSearch-LocalSequence"
+    private lateinit var localsearch: LocalSearch<BinPackProblem, ContainerSolution, LSSMove>
+
+    override fun optimize(): BinPackSolution {
+        return localsearch.optimize()
+    }
+
+    override fun optimizeStep(limit: Int): Pair<ContainerSolution, Boolean> {
+        return localsearch.optimizeStep(limit)
+    }
+
+    override fun init(instance: BinPackProblem) {
+        localsearch = LocalSearch(LocalSequenceStrategy(NormalPosCircTouchPacker), instance)
     }
 }

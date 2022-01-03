@@ -3,8 +3,8 @@ package binpack.greedy
 import algorithms.greedy.GreedyPackStrategy
 import binpack.BinPackSolution
 import binpack.Box
+import binpack.ContainerSolution
 import binpack.PlacedBox
-import ui.UIState
 
 abstract class GenericBinPacker(private val highEffort: Boolean, private val lowerBound: Int = 0) : GreedyPackStrategy<Box, Int, BinPackSolution> {
     protected var size = 0
@@ -17,14 +17,14 @@ abstract class GenericBinPacker(private val highEffort: Boolean, private val low
         size = constraints
     }
 
-    override fun initialSolution(): BinPackSolution {
+    override fun initialSolution(): ContainerSolution {
         reset()
-        return BinPackSolution(size, containers.map { it.boxes })
+        return ContainerSolution(size, containers)
     }
 
     override fun packItem(item: Box): BinPackSolution = if(highEffort) packItemBestFit(item) else packItemFirstFit(item)
 
-    private fun packItemFirstFit(item: Box): BinPackSolution {
+    private fun packItemFirstFit(item: Box): ContainerSolution {
         var placed: PlacedBox? = null
         var ci = 0
         var i = 0
@@ -52,10 +52,10 @@ abstract class GenericBinPacker(private val highEffort: Boolean, private val low
             availableContainers.remove(containers[ci])
         }
 
-        return BinPackSolution(size, containers.map{ it.boxes })
+        return ContainerSolution(size, containers)
     }
 
-    private fun packItemBestFit(item: Box): BinPackSolution {
+    private fun packItemBestFit(item: Box): ContainerSolution {
         val placed = availableContainers.map { Pair(packIntoContainer(item, it), it.ci) }.maxByOrNull { it.first?.second ?: Double.NEGATIVE_INFINITY }
         val ci: Int
 
@@ -77,7 +77,7 @@ abstract class GenericBinPacker(private val highEffort: Boolean, private val low
             availableContainers.remove(containers[ci])
         }
 
-        return BinPackSolution(size, containers.map{ it.boxes })
+        return ContainerSolution(size, containers)
     }
 
     abstract fun packIntoContainer(item: Box, container: Container): Pair<PlacedBox,Double>?
@@ -95,18 +95,32 @@ abstract class GenericBinPacker(private val highEffort: Boolean, private val low
         }
     }
 
-    fun getSolution(): BinPackSolution {
-        return BinPackSolution(size, containers.map { it.boxes })
+    fun getSolution(): ContainerSolution {
+        return ContainerSolution(size, containers)
     }
 }
 
-class Container(val ci: Int, val size: Int) {
-    val boxes = mutableListOf<PlacedBox>()
-    val segmentsX = mutableListOf(Segment(0,0))
-    val segmentsY = mutableListOf(Segment(0,0))
-
+class Container(
+    val ci: Int,
+    val size: Int,
+    val boxes: MutableList<PlacedBox> = mutableListOf(),
+    val segmentsX: MutableList<Segment> = mutableListOf(Segment(0,0)),
+    val segmentsY: MutableList<Segment> = mutableListOf(Segment(0,0)),
+) {
     val hasAccessibleSpace: Boolean
         get() = segmentsX.any { it.value < size && it.start < size }
+
+    val freeSpace: Int
+        get() = size * size - boxes.sumOf { it.area }
+
+    val accessibleSpace: Int
+        get() = segmentsX.mapIndexed { idx, seg ->
+                val width = size - seg.value
+                val height = if(idx == segmentsX.size-1) size - seg.start else segmentsX[idx+1].start - seg.start
+                width * height
+            }.sum()
+
+    fun clone() = Container(ci, size, boxes.toMutableList(), segmentsX.toMutableList(), segmentsY.toMutableList())
 
     fun add(box: PlacedBox) {
         boxes.add(box)
@@ -135,6 +149,12 @@ class Container(val ci: Int, val size: Int) {
         return segs.subList(firstSegmentIndex, lastSegmentIndex + 1)
     }
 
+    fun swap(a: Int, b: Int) {
+        val tmp = boxes[a]
+        boxes[a] = boxes[b]
+        boxes[b] = tmp
+    }
+
     private fun updateSegments(segs: MutableList<Segment>, boxStart: Int, boxMeasurement: Int, value: Int, boxValue: Int) {
         val boxEnd = boxStart + boxMeasurement
         val lastSegmentIndex = normalizeBinarySearchIndex(segs.binarySearchBy(boxEnd){ it.start })
@@ -145,7 +165,6 @@ class Container(val ci: Int, val size: Int) {
 
         segs.removeAll { it.start in boxStart until boxEnd }
         val insertIndex = -(segs.binarySearchBy(boxStart){ it.start } + 1)
-        //console.log(insertIndex)
         segs.add(insertIndex, Segment(segStart, value + boxValue))
 
         if(lastUsedSegment.start < boxEnd)

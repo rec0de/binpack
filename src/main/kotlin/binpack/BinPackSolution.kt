@@ -1,5 +1,6 @@
 package binpack
 
+import binpack.greedy.Container
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -40,3 +41,5 @@ open class BinPackSolution(val containerSize: Int, val containers: List<Collecti
 class SequenceSolution(containerSize: Int, val insertionSequence: List<Box>, containers: List<Collection<PlacedBox>>) : BinPackSolution(containerSize, containers) {
 
 }
+
+class ContainerSolution(containerSize: Int, val containerObjs: List<Container>) : BinPackSolution(containerSize, containerObjs.map{ it.boxes })

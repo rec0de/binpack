@@ -16,7 +16,7 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
     fun optimizeStep(stepLimit: Int): Pair<Solution, Boolean> {
         var step = 0
         var noImprovement = 0
-        val explorationLimit = 200
+        val explorationLimit = 500
         val noImprovementLimit = 5
 
         while(step < stepLimit) {
@@ -26,12 +26,11 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
             if(consideredMoves.size > explorationLimit)
                 consideredMoves = consideredMoves.subList(0, explorationLimit)
 
-            val bestNextStep = consideredMoves.minByOrNull { strategy.scoreMove(solution, it) } ?: break // break if no next step
-            val newSolution = strategy.applyMove(solution, bestNextStep)
-            val newCost = strategy.scoreSolution(newSolution)
+            val bestNextStep = consideredMoves.minByOrNull { strategy.deltaScoreMove(solution, bestCost, it) } ?: break // break if no next step
 
             // break if no improvement
-            if(newCost >= bestCost) {
+            // TODO: redundant second evaluation of deltaScore
+            if(strategy.deltaScoreMove(solution, bestCost, bestNextStep) >= 0) {
                 noImprovement++
                 console.log("No improvement for $noImprovement moves, limit is $noImprovementLimit")
                 if(noImprovement == noImprovementLimit)
@@ -39,14 +38,14 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
                 else
                     continue
             }
+            else {
+                console.log("Applied move: $bestNextStep")
+                solution = strategy.applyMove(solution, bestNextStep)
+                bestCost = strategy.scoreSolution(solution)
+                noImprovement = 0
+            }
 
-            console.log("Applied move: $bestNextStep")
-
-            // update solution
-            solution = newSolution
-            bestCost = newCost
             step++
-            noImprovement = 0
         }
 
         return Pair(solution, false)

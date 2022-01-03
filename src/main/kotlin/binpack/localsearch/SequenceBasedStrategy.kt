@@ -37,7 +37,7 @@ class SequenceBasedStrategy(private val packer: GenericBinPacker) : LocalSearchS
         return SequenceSolution(solution.containerSize, newBoxes, packer.getSolution().containers)
     }
 
-    override fun scoreMove(solution: SequenceSolution, move: SwapMove): Double {
+    override fun deltaScoreMove(solution: SequenceSolution, currentScore: Double, move: SwapMove): Double {
         val newState = applyMove(solution, move)
         return scoreSolution(newState)
     }

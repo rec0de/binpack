@@ -31,7 +31,7 @@ object UIState {
     var stepSize = 1
     var minFrameDelay = 100
 
-    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyOnlineNPCT, GreedyOnlineNPCTBF, GreedyAreaDescNPFF, GreedyAreaDescNPCT, GreedyAreaDescNPCTBF, LocalSearchFirstFit, LocalSearchCircTouch)
+    val algorithms = listOf<Algorithm>(GreedyOnlineNPFF, GreedyOnlineNPCT, GreedyOnlineNPCTBF, GreedyAreaDescNPFF, GreedyAreaDescNPCT, GreedyAreaDescNPCTBF, LocalSearchFirstFit, LocalSearchCircTouch, LocalSearchLocalSequence)
     var activeAlgorithm = algorithms[0]
 
     lateinit var instance: BinPackProblem

@@ -37,7 +37,7 @@ object GravityBinPackStrategy : LocalSearchStrategy<BinPackProblem, BinPackProbl
         return BinPackProblem(solution.containerSize, newBoxes)
     }
 
-    override fun scoreMove(solution: BinPackProblem, move: GravityPackMove) = scoreSolution(applyMove(solution, move))
+    override fun deltaScoreMove(solution: BinPackProblem, currentScore: Double, move: GravityPackMove) = scoreSolution(applyMove(solution, move))
 
     override fun scoreSolution(solution: BinPackProblem): Double {
         val size = solution.containerSize
