@@ -1,16 +1,13 @@
 plugins {
-    kotlin("js") version "1.6.10"
+    kotlin("multiplatform") version "1.6.10"
 }
 
 group = "me.user"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    jcenter()
     mavenCentral()
 }
-
-
 
 kotlin {
     js(IR) {
@@ -18,6 +15,14 @@ kotlin {
         browser {
             commonWebpackConfig {
                 cssSupport.enabled = true
+            }
+        }
+    }
+    jvm()
+    sourceSets {
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test")) // This brings all the platform dependencies automatically
             }
         }
     }
