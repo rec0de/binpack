@@ -36,9 +36,7 @@ object LocalSearchMaximalSpace : Algorithm() {
     }
 
     override fun optimizeStep(limit: Int): Pair<SpaceContainerSolution, Boolean> {
-        val res = localsearch.optimizeStep(limit)
-        Logger.log(res.first.containerObjs.joinToString("\n") { it.boxes.joinToString(", ") })
-        return res
+        return localsearch.optimizeStep(limit)
     }
 
     override fun init(instance: BinPackProblem) {

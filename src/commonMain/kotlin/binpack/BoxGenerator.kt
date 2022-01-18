@@ -25,7 +25,7 @@ object BoxGenerator {
         for (i in (1..nBoxes)) {
             boxes.add(genBox(minW, maxW, minH, maxH, r))
         }
-        return boxes;
+        return boxes
     }
 
     private fun genBox(minW: Int, maxW: Int, minH: Int, maxH: Int, r: Random): Box {

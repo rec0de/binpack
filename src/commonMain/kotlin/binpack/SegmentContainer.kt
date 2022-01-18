@@ -6,9 +6,11 @@ class SegmentContainer(
     override val boxes: MutableList<PlacedBox> = mutableListOf(),
     val segmentsX: MutableList<Segment> = mutableListOf(Segment(0, 0)),
     val segmentsY: MutableList<Segment> = mutableListOf(Segment(0, 0)),
+    val deepInsertionCandidates: MutableList<Pair<Int,Int>> = mutableListOf(),
     freeSpaceInit: Int = -1,
     accessibleSpaceInit: Int = -1
 ) : Container {
+
     override val hasAccessibleSpace: Boolean
         get() = segmentsX.any { it.value < size && it.start < size }
 
@@ -30,15 +32,30 @@ class SegmentContainer(
             return field
         }
 
-    override fun clone() = SegmentContainer(ci, size, boxes.toMutableList(), segmentsX.toMutableList(), segmentsY.toMutableList(), freeSpace, accessibleSpace)
+    override fun clone() = SegmentContainer(
+        ci,
+        size,
+        boxes.toMutableList(),
+        segmentsX.toMutableList(),
+        segmentsY.toMutableList(),
+        deepInsertionCandidates.toMutableList(),
+        freeSpace,
+        accessibleSpace
+    )
 
     override fun add(box: PlacedBox) {
+        val prevAccessible = accessibleSpace
+
         boxes.add(box)
         freeSpace -= box.area
         invalidateAccessible()
 
         updateSegments(segmentsX, box.y, box.h, box.x, box.w)
         updateSegments(segmentsY, box.x, box.w, box.y, box.h)
+
+        val accessibleChange = prevAccessible - accessibleSpace
+        if(accessibleChange - box.area >= size * size * 0.05)
+            deepInsertionCandidates.add(Pair(boxes.size - 1, accessibleChange - box.area))
     }
 
     fun getRelevantSegments(segs: List<Segment>, boxStart: Int, boxMeasurement: Int): List<Segment> {

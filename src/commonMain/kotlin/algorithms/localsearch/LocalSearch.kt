@@ -32,14 +32,14 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
             // break if no improvement
             if(bestNextStepDelta >= 0) {
                 noImprovement++
-                Logger.log("No improvement for $noImprovement moves, limit is $noImprovementLimit")
+                //Logger.log("No improvement for $noImprovement moves, limit is $noImprovementLimit")
                 if(noImprovement == noImprovementLimit)
                     return Pair(solution, true)
                 else
                     continue
             }
             else {
-                Logger.log("Applied move: $bestNextStep")
+                //Logger.log("Applied move: $bestNextStep")
                 solution = strategy.applyMove(solution, bestNextStep!!)
                 bestCost = strategy.scoreSolution(solution)
                 noImprovement = 0

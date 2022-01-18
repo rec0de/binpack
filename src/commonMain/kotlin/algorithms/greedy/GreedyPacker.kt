@@ -3,7 +3,7 @@ package algorithms.greedy
 class GreedyPacker<Item, Constraints, Solution>(
     private val order: GreedyOrderingStrategy<Item, Constraints, Solution>,
     private val packer: GreedyPackStrategy<Item, Constraints, Solution>,
-    private val constraints: Constraints,
+    constraints: Constraints,
     items: Collection<Item>
 ) {
 

@@ -1,10 +1,11 @@
 package binpack.localsearch
 
 import algorithms.localsearch.LocalSearchStrategy
-import binpack.*
-import kotlin.math.max
+import binpack.BinPackProblem
+import binpack.SpaceContainer
+import binpack.SpaceContainerSolution
 
-class MaximalSpaceStrategy() : LocalSearchStrategy<BinPackProblem, SpaceContainerSolution, MSSMove> {
+class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerSolution, MSSMove> {
     private lateinit var instance: BinPackProblem
 
     override fun init(instance: BinPackProblem) {
@@ -24,7 +25,6 @@ class MaximalSpaceStrategy() : LocalSearchStrategy<BinPackProblem, SpaceContaine
     override fun neighboringSolutions(solution: SpaceContainerSolution): Iterable<MSSMove> {
         val moves = mutableListOf<MSSMove>()
         val containers = solution.containerObjs
-        val lowerIndex = max(0, containers.size - 100)
 
         containers.indices.forEach { source ->
             containers[source].boxes.forEachIndexed { boxi, box ->

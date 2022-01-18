@@ -39,6 +39,5 @@ open class BinPackSolution(val containerSize: Int, val containers: List<Collecti
     }
 }
 
-class SegmentContainerSolution(containerSize: Int, val containerObjs: List<SegmentContainer>) : BinPackSolution(containerSize, containerObjs.map{ it.boxes })
 class SpaceContainerSolution(containerSize: Int, val containerObjs: List<SpaceContainer>) : BinPackSolution(containerSize, containerObjs.map{ it.boxes })
 class ContainerSolution<C : Container>(containerSize: Int, val containerObjs: List<C>) : BinPackSolution(containerSize, containerObjs.map{ it.boxes })
