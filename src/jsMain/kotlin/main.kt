@@ -2,8 +2,11 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
 import ui.UIState
-import viz.BinPackVisualizer
+import ui.BinPackVisualizer
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
+@OptIn(ExperimentalTime::class)
 fun main() {
     window.addEventListener("load", {
         val canvas = document.getElementById("c") as HTMLCanvasElement
@@ -20,6 +23,7 @@ fun main() {
         debug.width = document.body!!.clientWidth
 
         UIState.visualizer = BinPackVisualizer(ctx, debug.getContext("2d") as CanvasRenderingContext2D)
+        UIState.debugVisualizer = UIState.visualizer
         UIState.refreshInstance()
 
         (document.getElementById("btnDebugClear") as HTMLButtonElement).onclick = { UIState.visualizer.debugClear() }
@@ -42,7 +46,10 @@ fun main() {
         }
 
         stepBtn.onclick = {
-            UIState.solution = UIState.activeAlgorithm.optimizeStep(1).first
+            val stepTime = measureTime {
+                UIState.solution = UIState.activeAlgorithm.optimizeStep(1).first
+            }
+            Logger.log("Step time: ${stepTime.inWholeMilliseconds} ms")
             UIState.visualizer.refresh(UIState.solution)
         }
 
@@ -79,4 +86,3 @@ fun main() {
     })
 }
 
-fun log(vararg o: Any?) = console.log(o)

@@ -1,6 +1,6 @@
 package binpack
 
-class SpaceContainer(
+open class SpaceContainer(
     override var ci: Int,
     override val size: Int,
     override val boxes: MutableList<PlacedBox> = mutableListOf(),
@@ -19,29 +19,21 @@ class SpaceContainer(
         add(box, space)
     }
 
-    fun add(box: Box, space: PlacedBox) {
+    open fun add(box: Box, space: PlacedBox) {
         var box = box
         if(!space.fits(box) && space.fits(box.rotate()))
             box = box.rotate()
         else if(!space.fits(box))
             throw Exception("Space $space does not fit box $box")
 
-        boxes.add(box.asPlaced(space.x, space.y))
+        val placed = box.asPlaced(space.x, space.y)
+        boxes.add(placed)
         spaces.remove(space)
-        spaces.addAll(shatter(space, box))
+        spaces.addAll(space.shatter(placed))
     }
 
-    fun remove(box: PlacedBox) {
+    open fun remove(box: PlacedBox) {
         boxes.remove(box)
         spaces.add(box)
-    }
-
-    private fun shatter(space: PlacedBox, box: Box): List<PlacedBox> {
-        val newSpaces = mutableListOf<PlacedBox>()
-        if(space.w > box.w)
-            newSpaces.add(PlacedBox(space.w - box.w, space.h, space.x + box.w, space.y))
-        if(space.h > box.h)
-            newSpaces.add(PlacedBox(box.w, space.h - box.h, space.x, space.y + box.h))
-        return newSpaces
     }
 }

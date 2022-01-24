@@ -3,7 +3,7 @@ package binpack.greedy
 import algorithms.greedy.GreedyPackStrategy
 import binpack.*
 
-abstract class GenericBinPacker<C : Container>(private val highEffort: Boolean, private val lowerBound: Int = 0) : GreedyPackStrategy<Box, Int, BinPackSolution> {
+abstract class GenericBinPacker<C : Container>(private val highEffort: Boolean, private val lowerBound: Int = 0) : GreedyPackStrategy<Box, Int, ContainerSolution<C>> {
     protected var size = 0
     private var containerIndex = 0
     private val containers = mutableListOf<C>()
@@ -19,7 +19,7 @@ abstract class GenericBinPacker<C : Container>(private val highEffort: Boolean, 
         return ContainerSolution(size, containers)
     }
 
-    override fun packItem(item: Box): BinPackSolution = if(highEffort) packItemBestFit(item) else packItemFirstFit(item)
+    override fun packItem(item: Box): ContainerSolution<C> = if(highEffort) packItemBestFit(item) else packItemFirstFit(item)
 
     private fun packItemFirstFit(item: Box): ContainerSolution<C> {
         var placed: PlacedBox? = null

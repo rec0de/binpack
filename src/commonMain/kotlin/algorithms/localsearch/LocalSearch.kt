@@ -39,7 +39,7 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
                     continue
             }
             else {
-                //Logger.log("Applied move: $bestNextStep")
+                Logger.log("Applied move: $bestNextStep for delta of $bestNextStepDelta")
                 solution = strategy.applyMove(solution, bestNextStep!!)
                 bestCost = strategy.scoreSolution(solution)
                 noImprovement = 0

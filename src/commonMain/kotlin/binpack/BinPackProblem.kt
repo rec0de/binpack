@@ -20,6 +20,7 @@ open class Box(val w: Int, val h: Int) {
 
     fun asPlaced(x: Int, y: Int) = PlacedBox(w, h, x, y)
 
+    fun fitsRotated(box: Box) = (box.w <= w && box.h <= h) || (box.w <= h && box.h <= w)
     fun fits(box: Box) = box.w <= w && box.h <= h
 
     fun rotate() = Box(h, w)
@@ -31,6 +32,40 @@ class PlacedBox(w: Int, h: Int, val x: Int, val y: Int) : Box(w, h) {
     override fun clone() = PlacedBox(w, h, x, y)
     override fun toString() = "[${w}x$h @ ($x,$y)]"
 
-    fun intersects(box: PlacedBox) = !((x+w <= box.x) || (box.x+box.w <= x) || (y+h <= box.y) || (box.y+box.h <= y))
-    fun outOfBounds(size: Int) = x < 0 || y < 0 || x+w > size || y+h > size
+    val endX: Int
+        get() = x + w
+    val endY: Int
+        get() = y + h
+
+    fun contains(box: PlacedBox) = (box.x >= x && box.y >= y && box.endY <= endY && endX <= endX)
+    fun continuous(box: PlacedBox) = (box.x == x && box.w == w && (box.endY == y || box.y == endY)) || (box.y == y && box.h == h && (box.endX == x || box.x == endX))
+    fun superBox(box: PlacedBox): PlacedBox {
+        val sx = min(x, box.x)
+        val sy = min(y, box.y)
+        val w = max(endX, box.endX) - sx
+        val h = max(endY, box.endY) - sy
+        return PlacedBox(w, h, sx, sy)
+    }
+
+    fun shatter(box: PlacedBox): List<PlacedBox> {
+        val fragments = mutableListOf<PlacedBox>()
+
+        if(!intersects(box))
+            throw Exception("Trying to shatter space with non-intersecting box")
+
+        if (endX > box.endX)
+            fragments.add(PlacedBox(endX - box.endX, h, box.endX, y))
+        if (endY > box.endY)
+            fragments.add(PlacedBox(min(w, box.endX - x), endY - box.endY, x, box.endY))
+        if (x < box.x)
+            fragments.add(PlacedBox(box.x - x, min(h, box.endY - y), x, y))
+        if (y < box.y)
+            fragments.add(PlacedBox(min(box.endX, endX) - max(box.x, x), box.y - y, max(box.x, x), y))
+
+        //Logger.log("Shattered ${toString()} using $box into ${fragments.joinToString(", ")}")
+        return fragments
+    }
+
+    fun intersects(box: PlacedBox) = !((endX <= box.x) || (box.endX <= x) || (endY <= box.y) || (box.endY <= y))
+    fun outOfBounds(size: Int) = x < 0 || y < 0 || endX > size || endY > size
 }

@@ -1,4 +1,4 @@
-package viz
+package ui
 
 import binpack.BinPackSolution
 import org.w3c.dom.CanvasRenderingContext2D

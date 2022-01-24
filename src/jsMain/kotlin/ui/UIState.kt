@@ -8,15 +8,13 @@ import binpack.configurations.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLButtonElement
-import org.w3c.dom.HTMLTableRowElement
 import org.w3c.dom.asList
-import viz.Visualizer
 import kotlin.math.max
 import kotlin.math.round
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
-object UIState {
+actual object UIState {
     object GeneratorOptions {
         var seed = 1337
         var containerSize = 20
@@ -41,6 +39,7 @@ object UIState {
         GreedyAreaDescNPCT,
         GreedyAreaDescNPCTBF,
         GreedyAreaDescSpaceFF,
+        GreedyAdaptiveBFSpace,
         LocalSearchLocalSequence,
         LocalSearchMaximalSpace)
 
@@ -49,6 +48,7 @@ object UIState {
     lateinit var instance: BinPackProblem
     lateinit var solution: BinPackSolution
     lateinit var visualizer: Visualizer<BinPackSolution>
+    actual var debugVisualizer: DebugVisualizer? = null
 
     private fun newInstance() = BoxGenerator.getProblemInstance(
             GeneratorOptions.containerSize,

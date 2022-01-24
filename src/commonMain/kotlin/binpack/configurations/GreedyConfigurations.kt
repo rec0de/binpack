@@ -1,11 +1,9 @@
 package binpack.configurations
 
 import algorithms.greedy.GreedyPacker
-import binpack.Algorithm
-import binpack.BinPackProblem
-import binpack.BinPackSolution
-import binpack.Box
+import binpack.*
 import binpack.greedy.*
+import ui.UIState
 
 abstract class GenericGreedyConfig : Algorithm() {
     protected lateinit var packer: GreedyPacker<Box,Int,BinPackSolution>
@@ -74,5 +72,16 @@ object GreedyOnlineSpaceFF : GenericGreedyConfig() {
     override val shortName = "Gr. Online SpaceFF"
     override fun init(instance: BinPackProblem) {
         packer = GreedyPacker(OnlineOrdering, SpaceFirstFitPacker, instance.containerSize, instance.boxes)
+    }
+}
+
+object GreedyAdaptiveBFSpace : Algorithm() {
+    private lateinit var packer: GreedyPacker<Box,Int,ContainerSolution<SpaceContainer>>
+    override val name = "Greedy-AdaptiveBF-Space"
+    override val shortName = "Gr. AdaptiveBF Space"
+    override fun optimize() = packer.optimize()
+    override fun optimizeStep(limit: Int) = packer.optimizeStep(limit)
+    override fun init(instance: BinPackProblem) {
+        packer = GreedyPacker(AdaptiveBestFitOrdering, SpaceFirstFitPacker, instance.containerSize, instance.boxes)
     }
 }

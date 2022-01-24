@@ -1,11 +1,11 @@
-package viz
+package ui
 
 import binpack.PlacedBox
 import org.w3c.dom.CanvasRenderingContext2D
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class Visualizer<Solution> {
+abstract class Visualizer<Solution> : DebugVisualizer {
     protected var displaySize = 20.0
     protected var rowSize = 1
     protected var scale = 10.0
@@ -47,11 +47,11 @@ abstract class Visualizer<Solution> {
         debugDisabled = flag
     }
 
-    fun debugClear() {
+    override fun debugClear() {
         debug.clearRect(0.0, 0.0, debug.canvas.width.toDouble(), debug.canvas.height.toDouble())
     }
 
-    fun debugBox(box: PlacedBox, ci: Int) {
+    override fun debugBox(box: PlacedBox, ci: Int) {
         if(debugDisabled)
             return
         val row = ci / rowSize
@@ -59,10 +59,12 @@ abstract class Visualizer<Solution> {
         val sx = (displaySize + 20) * col
         val sy = (displaySize + 20) * row
         debug.fillStyle = "#00aa00"
+        debug.strokeStyle = "#004400"
         debug.fillRect(sx + box.x * scale, sy + box.y * scale, box.w * scale, box.h * scale)
+        debug.strokeRect(sx + box.x * scale, sy + box.y * scale, box.w * scale, box.h * scale)
     }
 
-    fun debugLine(sx: Int, sy: Int, ex: Int, ey: Int, ci: Int) {
+    override fun debugLine(sx: Int, sy: Int, ex: Int, ey: Int, ci: Int) {
         if(debugDisabled)
             return
         val row = ci / rowSize

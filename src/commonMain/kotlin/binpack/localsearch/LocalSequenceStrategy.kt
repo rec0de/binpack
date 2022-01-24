@@ -18,7 +18,6 @@ class LocalSequenceStrategy(private val packer: GenericBinPacker<SegmentContaine
     override fun initialSolution(): ContainerSolution<SegmentContainer> {
         packer.init(instance.containerSize)
         instance.boxes.sortedBy { -it.area }.forEach { packer.packItem(it) }
-        //instance.boxes.forEach { packer.packItem(it) }
         return packer.getSolution()
     }
 
