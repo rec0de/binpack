@@ -7,6 +7,9 @@ interface Container {
     val hasAccessibleSpace: Boolean
     val freeSpace: Int
 
+    val area: Int
+        get() = size * size
+
     fun add(box: PlacedBox)
     fun clone(): Container
 }

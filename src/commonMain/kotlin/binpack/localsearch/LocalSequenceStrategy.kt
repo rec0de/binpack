@@ -10,6 +10,7 @@ import kotlin.math.max
 
 class LocalSequenceStrategy(private val packer: GenericBinPacker<SegmentContainer>) : LocalSearchStrategy<BinPackProblem, ContainerSolution<SegmentContainer>, LSSMove> {
     private lateinit var instance: BinPackProblem
+    private val moveBudget = 500
 
     override fun init(instance: BinPackProblem) {
         this.instance = instance
@@ -21,7 +22,7 @@ class LocalSequenceStrategy(private val packer: GenericBinPacker<SegmentContaine
         return packer.getSolution()
     }
 
-    override fun neighboringSolutions(solution: ContainerSolution<SegmentContainer>): Iterable<LSSMove> {
+    override fun neighboringSolutions(solution: ContainerSolution<SegmentContainer>): List<LSSMove> {
         val containers = solution.containerObjs
 
         // Try reflowing boxes into containers with accessible space
@@ -43,8 +44,9 @@ class LocalSequenceStrategy(private val packer: GenericBinPacker<SegmentContaine
             }
         }
 
-        Logger.log("Move count: ${reflows.size} reflow ops, ${swaps.size} swap ops, ${inserts.size} insert ops")
-        return reflows + swaps + inserts
+        //Logger.log("Move count: ${reflows.size} reflow ops, ${swaps.size} swap ops, ${inserts.size} insert ops")
+        val combined = reflows + swaps + inserts
+        return if(combined.size > moveBudget) combined.shuffled().subList(0, moveBudget) else combined
     }
 
     override fun deltaScoreMove(solution: ContainerSolution<SegmentContainer>, currentScore: Double, move: LSSMove): Double {

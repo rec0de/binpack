@@ -16,15 +16,13 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
     fun optimizeStep(stepLimit: Int): Pair<Solution, Boolean> {
         var step = 0
         var noImprovement = 0
-        val explorationLimit = 500
         val noImprovementLimit = 5
 
         while(step < stepLimit) {
-            // find best neighboring solution
-            var consideredMoves = strategy.neighboringSolutions(solution).shuffled()
+            strategy.perIterationSharedSetup(solution)
 
-            if(consideredMoves.size > explorationLimit)
-                consideredMoves = consideredMoves.subList(0, explorationLimit)
+            // find best neighboring solution
+            val consideredMoves = strategy.neighboringSolutions(solution)
 
             val bestNextStep = consideredMoves.minByOrNull { strategy.deltaScoreMove(solution, bestCost, it) }
             val bestNextStepDelta = if(bestNextStep == null) 0.0 else strategy.deltaScoreMove(solution, bestCost, bestNextStep)
@@ -39,9 +37,10 @@ class LocalSearch<Problem, Solution, Move>(private val strategy: LocalSearchStra
                     continue
             }
             else {
-                Logger.log("Applied move: $bestNextStep for delta of $bestNextStepDelta")
+                //Logger.log("Applied move: $bestNextStep for delta of $bestNextStepDelta")
                 solution = strategy.applyMove(solution, bestNextStep!!)
                 bestCost = strategy.scoreSolution(solution)
+                Logger.log("Best cost: $bestCost")
                 noImprovement = 0
             }
 
