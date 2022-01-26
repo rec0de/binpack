@@ -69,8 +69,8 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
                 }
 
                 // Generate cross-container repack moves
-                containers.forEachIndexed { tci, targetContainer ->
-                    targetContainer.spaces.indices.forEach { si ->
+                (0 until ci).forEach { tci ->
+                    containers[tci].spaces.indices.forEach { si ->
                         moves.add(RepackMove(ci, bi, tci, si))
                     }
                 }
