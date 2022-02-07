@@ -12,6 +12,7 @@ abstract class Visualizer<Solution> : DebugVisualizer {
     protected abstract val ctx: CanvasRenderingContext2D
     protected abstract val debug: CanvasRenderingContext2D
     private var debugDisabled = false
+    var fillTranslucent = false
 
     abstract fun render(solution: Solution)
 

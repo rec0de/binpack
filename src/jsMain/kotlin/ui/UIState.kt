@@ -5,6 +5,7 @@ import binpack.BinPackProblem
 import binpack.BinPackSolution
 import binpack.BoxGenerator
 import binpack.configurations.*
+import binpack.localsearch.OverlapSpaceStrategy
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.HTMLButtonElement
@@ -41,7 +42,8 @@ actual object UIState {
         GreedyAreaDescSpaceFF,
         GreedyAdaptiveBFSpace,
         LocalSearchLocalSequence,
-        LocalSearchMaximalSpace)
+        LocalSearchRepackSpace,
+        LocalSearchRelaxedSpace)
 
     var activeAlgorithm = algorithms[0]
 
@@ -65,17 +67,30 @@ actual object UIState {
         val elapsed = measureTime {
             val res = activeAlgorithm.optimizeStep(stepSize)
             solution = res.first
-            visualizer.refresh(solution)
-            updateStats()
 
             if(res.second)
                 stop()
         }
 
         runtime += elapsed.inWholeMilliseconds
+        visualizer.refresh(solution)
+        updateStats()
+
         val delay = max(5, minFrameDelay - elapsed.inWholeMilliseconds).toInt()
         if(running)
             window.setTimeout({ tick() }, delay)
+    }
+
+    @OptIn(ExperimentalTime::class)
+    fun singleStep() {
+        val elapsed = measureTime {
+            val res = activeAlgorithm.optimizeStep(stepSize)
+            solution = res.first
+        }
+
+        runtime += elapsed.inWholeMilliseconds
+        visualizer.refresh(solution)
+        updateStats()
     }
 
     fun stop() {
@@ -99,6 +114,9 @@ actual object UIState {
 
     fun setActiveAlgorithm(index: Int) {
         activeAlgorithm = algorithms[index]
+
+        visualizer.fillTranslucent = activeAlgorithm is LocalSearchRelaxedSpace
+
         reset()
     }
 
@@ -117,6 +135,7 @@ actual object UIState {
         activeAlgorithm.init(instance)
         solution = BinPackSolution(instance.containerSize, emptyList())
         visualizer.refresh(solution)
+        visualizer.debugClear()
     }
 }
 

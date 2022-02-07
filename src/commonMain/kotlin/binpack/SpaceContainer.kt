@@ -32,8 +32,23 @@ open class SpaceContainer(
         spaces.addAll(space.shatter(placed))
     }
 
-    open fun remove(box: PlacedBox) {
+    open fun remove(box: PlacedBox, overlapPossible: Boolean = false) {
         boxes.remove(box)
-        spaces.add(box)
+        if(overlapPossible) {
+            val candidateSpaces = mutableListOf(box)
+            val newSpaces = mutableListOf<PlacedBox>()
+
+            while(candidateSpaces.isNotEmpty()) {
+                val space = candidateSpaces.removeAt(0)
+                val intersecting = boxes.firstOrNull { it.intersects(space) }
+                if(intersecting == null)
+                    newSpaces.add(space)
+                else
+                    candidateSpaces.addAll(space.shatter(intersecting))
+            }
+            spaces.addAll(newSpaces)
+        }
+        else
+            spaces.add(box)
     }
 }

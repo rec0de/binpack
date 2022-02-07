@@ -3,7 +3,6 @@ package binpack.configurations
 import algorithms.greedy.GreedyPacker
 import binpack.*
 import binpack.greedy.*
-import ui.UIState
 
 abstract class GenericGreedyConfig : Algorithm() {
     protected lateinit var packer: GreedyPacker<Box,Int,BinPackSolution>

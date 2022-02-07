@@ -3,10 +3,7 @@ package binpack.configurations
 import algorithms.localsearch.LocalSearch
 import binpack.*
 import binpack.greedy.NormalPosCircTouchPacker
-import binpack.localsearch.LSSMove
-import binpack.localsearch.LocalSequenceStrategy
-import binpack.localsearch.MSSMove
-import binpack.localsearch.MaximalSpaceStrategy
+import binpack.localsearch.*
 
 object LocalSearchLocalSequence : Algorithm() {
     override val name = "LocalSearch-LocalSequence"
@@ -26,9 +23,9 @@ object LocalSearchLocalSequence : Algorithm() {
     }
 }
 
-object LocalSearchMaximalSpace : Algorithm() {
-    override val name = "LocalSearch-MaxSpace"
-    override val shortName = "LS MaxSpace"
+object LocalSearchRepackSpace : Algorithm() {
+    override val name = "LocalSearch-RepackSpace"
+    override val shortName = "LS RepackSpace"
     private lateinit var localsearch: LocalSearch<BinPackProblem, SpaceContainerSolution, MSSMove>
 
     override fun optimize(): BinPackSolution {
@@ -40,6 +37,24 @@ object LocalSearchMaximalSpace : Algorithm() {
     }
 
     override fun init(instance: BinPackProblem) {
-        localsearch = LocalSearch(MaximalSpaceStrategy(), instance)
+        localsearch = LocalSearch(RepackSpaceStrategy(), instance)
+    }
+}
+
+object LocalSearchRelaxedSpace : Algorithm() {
+    override val name = "LocalSearch-RelaxedSpace"
+    override val shortName = "LS RelaxedSpace"
+    private lateinit var localsearch: LocalSearch<BinPackProblem, SpaceContainerSolution, MSSMove>
+
+    override fun optimize(): BinPackSolution {
+        return localsearch.optimize()
+    }
+
+    override fun optimizeStep(limit: Int): Pair<SpaceContainerSolution, Boolean> {
+        return localsearch.optimizeStep(limit)
+    }
+
+    override fun init(instance: BinPackProblem) {
+        localsearch = LocalSearch(OverlapSpaceStrategy(), instance)
     }
 }

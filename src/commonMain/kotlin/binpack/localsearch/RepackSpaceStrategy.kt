@@ -2,13 +2,14 @@ package binpack.localsearch
 
 import algorithms.localsearch.LocalSearchStrategy
 import binpack.*
+import ui.UIState
 
-class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerSolution, MSSMove> {
-    private lateinit var instance: BinPackProblem
-    private val estimateFactor: Double = 1.5
-    private val moveBudget = 2000
-    private var moveIndex = 0
-    private var repackEstimationAvailableSpaces: List<Pair<Int,PlacedBox>>? = null
+open class RepackSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerSolution, MSSMove> {
+    protected lateinit var instance: BinPackProblem
+    protected open val estimateFactor: Double = 1.5
+    protected val moveBudget = 2000
+    protected var moveIndex = 0
+    protected var repackEstimationAvailableSpaces: List<Pair<Int,PlacedBox>>? = null
 
     override fun init(instance: BinPackProblem) {
         this.instance = instance
@@ -36,7 +37,7 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
             lateNeighborhood(containers)
     }
 
-    private fun earlyNeighborhood(containers: List<SpaceContainer>) : List<MSSMove> {
+    protected open fun earlyNeighborhood(containers: List<SpaceContainer>) : List<MSSMove> {
         val moves = mutableListOf<MSSMove>()
 
         containers.indices.forEach { source ->
@@ -58,7 +59,7 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         return moves
     }
 
-    private fun lateNeighborhood(containers: List<SpaceContainer>) : List<MSSMove> {
+    protected open fun lateNeighborhood(containers: List<SpaceContainer>) : List<MSSMove> {
         var repackMoves = mutableListOf<MSSMove>()
         var localMoves = mutableListOf<MSSMove>()
 
@@ -76,11 +77,8 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
 
                 // Generate cross-container repack moves
                 (0 until ci).forEach { tci ->
-                    val target = containers[tci]
-                    if(target.hasAccessibleSpace) {
-                        target.spaces.indices.forEach { si ->
-                            repackMoves.add(RepackMove(ci, bi, tci, si))
-                        }
+                    containers[tci].spaces.indices.forEach { si ->
+                        repackMoves.add(RepackMove(ci, bi, tci, si))
                     }
                 }
             }
@@ -121,13 +119,15 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
                 val box = container.boxes[move.box]
                 val space = container.spaces[move.space]
 
+                val placed = optimalPlacement(box, space, container.size)
+
                 // box doesn't fit target space, like, _at all_
-                if(box.asPlaced(space.x, space.y).outOfBounds(solution.containerSize))
+                if(placed == null)
                     0.0
                 else {
                     val cloned = container.clone()
                     cloned.remove(box)
-                    val success = localRepack(cloned, box.asPlaced(space.x, space.y)).isEmpty()
+                    val success = localRepack(cloned, placed).isEmpty()
                     if(success)
                         cloned.spaces.size.toDouble() - container.spaces.size
                     else
@@ -140,16 +140,22 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
                 val box = source.boxes[move.sourceBox]
                 val space = target.spaces[move.targetSpace]
 
+                val placed = optimalPlacement(box, space, target.size)
+
                 // box doesn't fit target space, like, _at all_
-                if(box.asPlaced(space.x, space.y).outOfBounds(solution.containerSize))
+                if(placed == null)
                     0.0
                 else {
                     val cloned = target.clone()
                     val emptiesSource = source.boxes.size == 1
-                    val spillover = localRepack(cloned, box.asPlaced(space.x, space.y))
+                    val spillover = localRepack(cloned, placed)
 
                     // If the source would be emptied, we have to explicitly forbid packing spillover there
-                    val globalRepackCost = estimateShallowGlobalRepack(solution, target.ci, if(emptiesSource) source.ci else null, spillover)
+                    val globalRepackCost = estimateShallowGlobalRepack(
+                        target.ci,
+                        if(emptiesSource) source.ci else null,
+                        spillover
+                    )
                     val targetCost = - box.area.toDouble()
                     val sourceCost = if(emptiesSource) box.area - source.area.toDouble() else box.area.toDouble()
 
@@ -175,16 +181,14 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         }
     }
 
-    private fun applyLocalMove(solution: SpaceContainerSolution, move: LocalMove) : SpaceContainerSolution {
+    protected fun applyLocalMove(solution: SpaceContainerSolution, move: LocalMove) : SpaceContainerSolution {
         val container = solution.containerObjs[move.container]
         val box = container.boxes[move.box]
         val space = container.spaces[move.space]
 
         container.remove(box)
 
-        // rotation?
-        val placed = box.asPlaced(space.x, space.y)
-
+        val placed = optimalPlacement(box, space, container.size)!!
         val repackSuccess = localRepack(container, placed).isEmpty()
 
         if(!repackSuccess)
@@ -193,7 +197,7 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         return solution
     }
 
-    private fun applyRepackMove(solution: SpaceContainerSolution, move: RepackMove) : SpaceContainerSolution {
+    protected fun applyRepackMove(solution: SpaceContainerSolution, move: RepackMove) : SpaceContainerSolution {
         val source = solution.containerObjs[move.sourceContainer]
         val target = solution.containerObjs[move.targetContainer]
         val box = source.boxes[move.sourceBox]
@@ -205,8 +209,7 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         source.remove(box)
         consolidateSpaces(source)
 
-        // rotation?
-        val placed = box.asPlaced(space.x, space.y)
+        val placed = optimalPlacement(box, space, target.size)!!
         val spillover = localRepack(target, placed)
 
         // Remove container if now empty
@@ -244,23 +247,12 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
             newContainers[move.sourceContainer] = newSource
         }
 
-        /*UIState.debugVisualizer!!.debugClear()
-        newContainers.forEachIndexed { ci, container ->
-            container.spaces.forEach { space ->
-                UIState.debugVisualizer!!.debugBox(space, ci)
-            }
-        }*/
-
         return SpaceContainerSolution(solution.containerSize, newContainers)
     }
 
-    override fun scoreSolution(solution: SpaceContainerSolution): Double {
-        return solution.containerObjs.sumOf { container ->
-            container.spaces.sumOf { it.area }.toDouble() / (container.ci + 1)
-        }
-    }
+    override fun scoreSolution(solution: SpaceContainerSolution) = 0.0
 
-    private fun estimateShallowGlobalRepack(solution: SpaceContainerSolution, sourceContainer: Int, additionalAvoid: Int?, boxes: List<Box>): Double {
+    private fun estimateShallowGlobalRepack(sourceContainer: Int, additionalAvoid: Int?, boxes: List<Box>): Double {
         if(boxes.isEmpty())
             return 0.0
 
@@ -277,7 +269,7 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         return delta
     }
 
-    private fun shallowGlobalRepack(containers: List<SpaceContainer>, sourceContainer: Int, boxes: List<Box>) : Boolean {
+    protected fun shallowGlobalRepack(containers: List<SpaceContainer>, sourceContainer: Int, boxes: List<Box>) : Boolean {
         boxes.sortedByDescending { it.area }.forEach { box ->
             val target = containers.firstOrNull { it.ci != sourceContainer && it.freeSpace >= box.area && it.spaces.any { space -> space.fitsRotated(box) } } ?: return false
             val space = target.spaces.first{ it.fitsRotated(box) }
@@ -324,7 +316,21 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
         return overflow
     }
 
-    private fun consolidateSpaces(c: SpaceContainer) {
+    protected fun optimalPlacement(box: Box, space: PlacedBox, size: Int): PlacedBox? {
+        val candidates = listOf(
+            box.asPlaced(space.x, space.y),
+            box.asPlaced(space.endX - box.w, space.y),
+            box.asPlaced(space.x, space.endY - box.h),
+            box.asPlaced(space.endX - box.w, space.endY - box.h),
+            box.rotate().asPlaced(space.x, space.y),
+            box.rotate().asPlaced(space.endX - box.w, space.y),
+            box.rotate().asPlaced(space.x, space.endY - box.h),
+            box.rotate().asPlaced(space.endX - box.w, space.endY - box.h)
+        )
+        return candidates.filter { !it.outOfBounds(size) }.maxByOrNull { space.relativeOverlap(it) }
+    }
+
+    protected fun consolidateSpaces(c: SpaceContainer) {
         var i: Int = 0
         var j: Int
 
@@ -335,7 +341,6 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
             while(j < c.spaces.size) {
                 val b = c.spaces[j]
                 if(a.continuous(b)) {
-                    //Logger.log("Box $a is continuous with $b, replacing with ${a.superBox(b)}")
                     c.spaces[i] = a.superBox(b)
                     c.spaces.removeAt(j)
                     a = c.spaces[i]
@@ -345,15 +350,15 @@ class MaximalSpaceStrategy : LocalSearchStrategy<BinPackProblem, SpaceContainerS
             }
             i += 1
         }
-
-        //Logger.log("Consolidation removed ${prev - c.spaces.size} spaces")
     }
 
-    private fun checkInvariants(id: String, c: SpaceContainer) {
-        if(c.spaces.any { a -> c.spaces.any{ b -> b != a && a.intersects(b)} })
-            throw Exception("Invariant violated: Intersecting spaces @ $id")
-        if(c.boxes.any { a -> c.boxes.any{ b -> b != a && a.intersects(b)} })
-            throw Exception("Invariant violated: Intersecting boxes @ $id")
+    protected fun renderDebugSpaces(containers: List<SpaceContainer>) {
+        UIState.debugVisualizer!!.debugClear()
+        containers.forEachIndexed { ci, container ->
+            container.spaces.forEach { space ->
+                UIState.debugVisualizer!!.debugBox(space, ci)
+            }
+        }
     }
 }
 

@@ -20,8 +20,8 @@ class BinPackVisualizer(override val ctx: CanvasRenderingContext2D, override val
             val sy = (displaySize + 20) * row
             renderContainer(sx, sy)
 
-            ctx.strokeStyle = "#f00"
-            ctx.fillStyle = "#a00"
+            ctx.strokeStyle = "#d05653"
+            ctx.fillStyle = if(fillTranslucent) "#a008" else "#820002"
             container.forEach { box ->
                 renderBox(box, sx, sy)
             }

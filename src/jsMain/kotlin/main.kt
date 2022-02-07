@@ -1,10 +1,10 @@
 import kotlinx.browser.document
 import kotlinx.browser.window
 import org.w3c.dom.*
-import ui.UIState
 import ui.BinPackVisualizer
+import ui.UIState
+import kotlin.random.Random
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
 fun main() {
@@ -16,7 +16,7 @@ fun main() {
         val runBtn = document.getElementById("btnRun") as HTMLButtonElement
         val resetBtn = document.getElementById("btnReset") as HTMLButtonElement
         val genBtn = document.getElementById("btnGenInstance") as HTMLButtonElement
-        val statsBtn = document.getElementById("btnUpdateStats") as HTMLButtonElement
+        val genRanBtn = document.getElementById("btnGenInstanceRandom") as HTMLButtonElement
         val algoSelect = document.getElementById("inpAlgorithm") as HTMLSelectElement
 
         canvas.width = document.body!!.clientWidth
@@ -39,18 +39,6 @@ fun main() {
             statEntry.id = "statEntry-$algo"
             statEntry.classList.add("invisible")
             statsContainer.appendChild(statEntry)
-        }
-
-        algoSelect.onchange = {
-            UIState.setActiveAlgorithm(algoSelect.selectedIndex)
-        }
-
-        stepBtn.onclick = {
-            val stepTime = measureTime {
-                UIState.solution = UIState.activeAlgorithm.optimizeStep(1).first
-            }
-            Logger.log("Step time: ${stepTime.inWholeMilliseconds} ms")
-            UIState.visualizer.refresh(UIState.solution)
         }
 
         runBtn.onclick = {
@@ -81,7 +69,22 @@ fun main() {
             0
         }
 
-        statsBtn.onclick = { UIState.updateStats() }
+        genRanBtn.onclick = {
+            val genOpt = UIState.GeneratorOptions
+            genOpt.seed = Random.nextInt()
+            (document.getElementById("inpSeed") as HTMLInputElement).value = genOpt.seed.toString()
+            genOpt.boxCount = (document.getElementById("inpBoxCount") as HTMLInputElement).value.toInt()
+            genOpt.containerSize = (document.getElementById("inpContainerSize") as HTMLInputElement).value.toInt()
+            genOpt.minH = (document.getElementById("inpMinHeight") as HTMLInputElement).value.toInt()
+            genOpt.minW = (document.getElementById("inpMinWidth") as HTMLInputElement).value.toInt()
+            genOpt.maxH = (document.getElementById("inpMaxHeight") as HTMLInputElement).value.toInt()
+            genOpt.maxW = (document.getElementById("inpMaxWidth") as HTMLInputElement).value.toInt()
+            UIState.refreshInstance()
+            0
+        }
+
+        algoSelect.onchange = { UIState.setActiveAlgorithm(algoSelect.selectedIndex) }
+        stepBtn.onclick = { UIState.singleStep() }
         resetBtn.onclick = { UIState.reset() }
     })
 }

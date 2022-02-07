@@ -66,6 +66,15 @@ class PlacedBox(w: Int, h: Int, val x: Int, val y: Int) : Box(w, h) {
         return fragments
     }
 
-    fun intersects(box: PlacedBox) = !((endX <= box.x) || (box.endX <= x) || (endY <= box.y) || (box.endY <= y))
     fun outOfBounds(size: Int) = x < 0 || y < 0 || endX > size || endY > size
+    fun intersects(box: PlacedBox) = !((endX <= box.x) || (box.endX <= x) || (endY <= box.y) || (box.endY <= y))
+
+    fun intersection(box: PlacedBox) : Int {
+        val xOverlap = max(0, min(endX, box.endX) - max(x, box.x));
+        val yOverlap = max(0, min(endY, box.endY) - max(y, box.y));
+        return xOverlap * yOverlap
+    }
+    fun relativeOverlap(box: PlacedBox) = intersection(box).toDouble() / max(area, box.area)
+
+
 }
